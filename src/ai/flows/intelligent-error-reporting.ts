@@ -33,14 +33,21 @@ const prompt = ai.definePrompt({
   output: {schema: IntelligentErrorReportingOutputSchema},
   prompt: `You are an expert web security analyst. A user tried to load a website in an iframe, but it failed.
 
-Based on the URL and the error message, determine if the website is likely blocked due to security restrictions (like X-Frame-Options or Content-Security-Policy).
+Your goal is to explain why it failed in simple, non-technical terms. The most common reasons are the website's 'X-Frame-Options' or 'Content-Security-Policy' settings.
+
+Analyze the provided URL and error message.
 
 URL: {{{url}}}
 Error Message: {{{errorMessage}}}
 
-Provide a clear, plain-language explanation of the issue, suitable for a non-technical user.  Be specific about the security restriction that is likely in place.
+**Instructions:**
+1.  Set \`isBlocked\` to \`true\` if you are confident the site is blocked by security policies.
+2.  Write a concise, friendly, and easy-to-understand \`explanation\`.
+3.  Focus on the key takeaway: "This website has security settings that prevent it from being shown inside other websites."
+4.  Mentioning 'X-Frame-Options' or 'Content-Security-Policy' as the likely cause is good, but keep the explanation simple.
 
-Set isBlocked to true if you believe the website is blocked, and false otherwise.
+**Example good explanation:**
+"The website at {{{url}}} has security settings (likely X-Frame-Options or Content-Security-Policy) that prevent it from being displayed inside other websites, including this preview tool."
 `,
 });
 
