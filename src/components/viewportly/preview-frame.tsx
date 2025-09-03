@@ -19,8 +19,14 @@ export function PreviewFrame({ id, name, width, height, icon: Icon, isCustom, ur
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorInfo, setErrorInfo] = React.useState<{ explanation: string } | null>(null);
   const [effectiveWidth, setEffectiveWidth] = React.useState(width);
+  const [isClient, setIsClient] = React.useState(false);
 
   React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!isClient) return;
     const updateWidth = () => {
         setEffectiveWidth(Math.min(width, window.innerWidth - 40));
     };
@@ -29,7 +35,7 @@ export function PreviewFrame({ id, name, width, height, icon: Icon, isCustom, ur
     window.addEventListener('resize', updateWidth);
 
     return () => window.removeEventListener('resize', updateWidth);
-  }, [width]);
+  }, [width, isClient]);
   
 
   React.useEffect(() => {
@@ -87,7 +93,7 @@ export function PreviewFrame({ id, name, width, height, icon: Icon, isCustom, ur
     <div className="flex flex-col gap-4 items-center animate-in fade-in-50 duration-500">
       <Card
         className="flex flex-col overflow-hidden shadow-xl border-border/80"
-        style={{ width: effectiveWidth, minWidth: '320px' }}
+        style={{ width: isClient ? effectiveWidth : width, minWidth: '320px' }}
       >
         <CardHeader className="flex flex-row items-center justify-between bg-muted/30 p-4">
           <div className="flex items-center gap-3">
