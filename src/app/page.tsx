@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -61,7 +61,7 @@ export default function ViewportlyPage() {
     setSubmittedUrl(values.url);
     toast({
       title: "🚀 Preview Loading",
-      description: `Loading ${values.url} in the selected frame.`,
+      description: `Attempting to load ${values.url} in the selected frame.`,
     });
   }
 
@@ -220,7 +220,7 @@ export default function ViewportlyPage() {
 
         <div id="framesContainer" className="flex flex-wrap justify-center items-start gap-8">
           {selectedFrame ? (
-            <PreviewFrame key={selectedFrame.id} {...selectedFrame} url={submittedUrl} onRemove={() => {}} />
+            <PreviewFrame key={selectedFrame.id} {...selectedFrame} url={submittedUrl} onRemove={removeFrame} />
           ) : (
              <Card className="flex flex-col items-center justify-center p-12 text-center shadow-xl border-border/80 w-full" style={{minHeight: 400}}>
                 <CardTitle className="text-xl font-bold">No Device Selected</CardTitle>

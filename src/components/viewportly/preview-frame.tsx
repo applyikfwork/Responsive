@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import type {Frame} from '@/app/page';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
+import {Card, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {Loader2, AlertTriangle, Trash2} from 'lucide-react';
@@ -25,7 +25,6 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
   React.useEffect(() => {
     if (!isClient) return;
     const updateWidth = () => {
-      // Ensure the frame is not wider than the viewport minus some padding
       setEffectiveWidth(Math.min(width, window.innerWidth - 40));
     };
 
@@ -39,17 +38,23 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
     if (url) {
       setIsLoading(true);
       setError(null);
-      // Since onLoad might not be reliable with proxied content,
-      // we'll just turn off the loader after a short delay.
-      const timer = setTimeout(() => setIsLoading(false), 2500);
-      return () => clearTimeout(timer);
     } else {
       setIsLoading(false);
       setError(null);
     }
   }, [url]);
 
-  const proxiedUrl = url ? `/api/proxy?url=${encodeURIComponent(url)}` : 'about:blank';
+  const handleLoad = () => {
+    setIsLoading(false);
+  };
+  
+  const handleError = () => {
+    setIsLoading(false);
+    const siteHost = new URL(url).hostname;
+    setError(
+      `The website at ${siteHost} has security settings that prevent it from being displayed inside other websites.\n\nThis is a common security feature (called X-Frame-Options or Content-Security-Policy) and not an error with this tool.`
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4 items-center animate-in fade-in-50 duration-500">
@@ -79,36 +84,38 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
             </Button>
           )}
         </CardHeader>
-        <CardContent className="relative p-0" style={{height}}>
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            </div>
-          )}
-          {error && !isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-destructive/10 backdrop-blur-sm z-10 p-4">
-              <Alert variant="destructive" className="text-left max-h-full overflow-y-auto">
-                <AlertTriangle className="h-5 w-5" />
-                <AlertTitle className="font-bold">Loading Error</AlertTitle>
-                <AlertDescription className="text-xs whitespace-pre-wrap">{error}</AlertDescription>
-              </Alert>
-            </div>
-          )}
-          {!url && !isLoading && !error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-              <p className="text-sm text-muted-foreground">Enter a URL to preview</p>
+        <div className="relative bg-background" style={{height}}>
+          {(isLoading || error || !url) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 p-4">
+              {isLoading && <Loader2 className="h-10 w-10 animate-spin text-primary" />}
+              {error && !isLoading && (
+                  <Alert variant="destructive" className="text-left max-h-full overflow-y-auto">
+                    <AlertTriangle className="h-5 w-5" />
+                    <AlertTitle className="font-bold">Content Blocked</AlertTitle>
+                    <AlertDescription className="text-sm whitespace-pre-wrap">{error}</AlertDescription>
+                  </Alert>
+              )}
+              {!url && !isLoading && !error && (
+                <p className="text-sm text-muted-foreground">Enter a URL to preview</p>
+              )}
             </div>
           )}
 
-          <iframe
-            title={`${name} Preview`}
-            src={proxiedUrl}
-            width="100%"
-            height="100%"
-            className="border-0"
-            sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-          />
-        </CardContent>
+          {url && (
+            <iframe
+              key={url}
+              title={`${name} Preview`}
+              src={url}
+              width="100%"
+              height="100%"
+              className="border-0 transition-opacity duration-300"
+              style={{ opacity: isLoading ? 0 : 1 }}
+              onLoad={handleLoad}
+              onError={handleError}
+              sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+            />
+          )}
+        </div>
       </Card>
     </div>
   );
