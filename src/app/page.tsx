@@ -7,15 +7,17 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { PreviewFrame } from '@/components/viewportly/preview-frame';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
-import { Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X } from 'lucide-react';
+import { AppWindow, Grid, Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X } from 'lucide-react';
 
 export type Frame = {
   id: number;
@@ -45,6 +47,7 @@ export default function ViewportlyPage() {
   const [submittedUrl, setSubmittedUrl] = useState<string>('');
   const [frames, setFrames] = useState<Frame[]>(initialFrames);
   const [selectedFrameId, setSelectedFrameId] = useState<number>(initialFrames[0].id);
+  const [isGridView, setIsGridView] = useState<boolean>(false);
   const { toast } = useToast();
 
   const urlForm = useForm<z.infer<typeof urlSchema>>({
@@ -61,7 +64,7 @@ export default function ViewportlyPage() {
     setSubmittedUrl(values.url);
     toast({
       title: "🚀 Preview Loading",
-      description: `Attempting to load ${values.url} in the selected frame.`,
+      description: `Attempting to load ${values.url} in the selected frame(s).`,
     });
   }
 
@@ -108,29 +111,28 @@ export default function ViewportlyPage() {
             ViewPortly
           </h1>
           <p className="mt-2 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Enter a website link to instantly preview it across a range of popular device sizes and custom resolutions.
+            Enter a URL to instantly preview it across a range of popular device sizes and custom resolutions.
           </p>
         </header>
 
-        <Card className="mb-8 p-4 sm:p-6 shadow-lg border-border/80">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <div className="space-y-4">
-                 <Form {...urlForm}>
-                  <form onSubmit={urlForm.handleSubmit(onUrlSubmit)} className="space-y-3">
+        <Card className="mb-8 shadow-lg border-border/80">
+           <CardContent className="p-4 sm:p-6">
+                <Form {...urlForm}>
+                  <form onSubmit={urlForm.handleSubmit(onUrlSubmit)} className="space-y-4">
                     <FormField
                       control={urlForm.control}
                       name="url"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold">Website URL</FormLabel>
-                          <div className="flex gap-2">
+                          <FormLabel className="font-semibold text-base">Website URL</FormLabel>
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <div className="relative flex-grow">
                               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                               <FormControl>
-                                <Input placeholder="https://example.com" className="pl-10" {...field} />
+                                <Input placeholder="https://example.com" className="pl-10 h-11 text-base" {...field} />
                               </FormControl>
                             </div>
-                            <Button type="submit" className="font-bold">Preview</Button>
+                            <Button type="submit" size="lg" className="font-bold">Preview</Button>
                           </div>
                           <FormMessage />
                         </FormItem>
@@ -138,93 +140,114 @@ export default function ViewportlyPage() {
                     />
                   </form>
                 </Form>
-                 <div>
-                    <Label className="font-semibold">Select Device</Label>
-                    <Select value={String(selectedFrameId)} onValueChange={(value) => setSelectedFrameId(Number(value))}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a device" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {frames.map(frame => (
-                                <SelectItem key={frame.id} value={String(frame.id)}>
-                                    <div className="flex items-center justify-between w-full">
-                                        <div className="flex items-center gap-2">
-                                            <frame.icon className="h-4 w-4" />
-                                            <span>{frame.name} ({frame.width}x{frame.height})</span>
-                                        </div>
-                                        {frame.isCustom && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6 ml-2 hover:bg-destructive/20"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    removeFrame(frame.id);
-                                                }}
-                                            >
-                                                <X className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                 </div>
-            </div>
+                
+                <Separator className="my-6" />
 
-
-            <Form {...customFrameForm}>
-              <form onSubmit={customFrameForm.handleSubmit(onAddFrame)} className="space-y-3">
-                 <FormLabel className="font-semibold">Add Custom Frame</FormLabel>
-                <div className="flex gap-2">
-                  <FormField
-                    control={customFrameForm.control}
-                    name="width"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                         <div className="relative">
-                           <MoveHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                           <FormControl>
-                              <Input type="number" placeholder="Width" className="pl-10" {...field} />
-                           </FormControl>
-                         </div>
-                         <FormMessage className="text-xs mt-1"/>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={customFrameForm.control}
-                    name="height"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <div className="relative">
-                           <MoveVertical className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                           <FormControl>
-                              <Input type="number" placeholder="Height" className="pl-10" {...field} />
-                           </FormControl>
-                         </div>
-                         <FormMessage className="text-xs mt-1"/>
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="font-bold bg-accent text-accent-foreground hover:bg-accent/90">
-                    <Plus className="h-5 w-5" />
-                  </Button>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div className="space-y-4">
+                        <Label className="font-semibold">View Options</Label>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                           <div className="flex items-center space-x-2">
+                              <AppWindow className="h-5 w-5 text-muted-foreground" />
+                              <Label htmlFor="view-mode" className={!isGridView ? 'text-foreground' : 'text-muted-foreground'}>Single View</Label>
+                              <Switch id="view-mode" checked={isGridView} onCheckedChange={setIsGridView} />
+                              <Label htmlFor="view-mode" className={isGridView ? 'text-foreground' : 'text-muted-foreground'}>Grid View</Label>
+                               <Grid className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                           {!isGridView && (
+                             <div className="flex-1">
+                                <Select value={String(selectedFrameId)} onValueChange={(value) => setSelectedFrameId(Number(value))}>
+                                    <SelectTrigger className="h-11">
+                                        <SelectValue placeholder="Select a device" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {frames.map(frame => (
+                                            <SelectItem key={frame.id} value={String(frame.id)}>
+                                                <div className="flex items-center justify-between w-full">
+                                                    <div className="flex items-center gap-2">
+                                                        <frame.icon className="h-4 w-4" />
+                                                        <span>{frame.name} ({frame.width}x{frame.height})</span>
+                                                    </div>
+                                                    {frame.isCustom && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 ml-2 hover:bg-destructive/20"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                removeFrame(frame.id);
+                                                            }}
+                                                        >
+                                                            <X className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                             </div>
+                           )}
+                        </div>
+                    </div>
+                    <Form {...customFrameForm}>
+                      <form onSubmit={customFrameForm.handleSubmit(onAddFrame)} className="space-y-3">
+                         <Label className="font-semibold">Add Custom Frame</Label>
+                        <div className="flex gap-2">
+                          <FormField
+                            control={customFrameForm.control}
+                            name="width"
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                 <div className="relative">
+                                   <MoveHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                   <FormControl>
+                                      <Input type="number" placeholder="Width" className="pl-10 h-11" {...field} />
+                                   </FormControl>
+                                 </div>
+                                 <FormMessage className="text-xs mt-1"/>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={customFrameForm.control}
+                            name="height"
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <div className="relative">
+                                   <MoveVertical className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                   <FormControl>
+                                      <Input type="number" placeholder="Height" className="pl-10 h-11" {...field} />
+                                   </FormControl>
+                                 </div>
+                                 <FormMessage className="text-xs mt-1"/>
+                              </FormItem>
+                            )}
+                          />
+                          <Button type="submit" size="lg" className="font-bold bg-accent text-accent-foreground hover:bg-accent/90">
+                            <Plus className="h-5 w-5" />
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
                 </div>
-              </form>
-            </Form>
-          </div>
+           </CardContent>
         </Card>
 
         <div id="framesContainer" className="flex flex-wrap justify-center items-start gap-8">
-          {selectedFrame ? (
-            <PreviewFrame key={selectedFrame.id} {...selectedFrame} url={submittedUrl} onRemove={removeFrame} />
+          {isGridView ? (
+            frames.map(frame => (
+               <PreviewFrame key={frame.id} {...frame} url={submittedUrl} onRemove={removeFrame} isRemovable={frame.isCustom} />
+            ))
+          ) : selectedFrame ? (
+            <PreviewFrame key={selectedFrame.id} {...selectedFrame} url={submittedUrl} onRemove={removeFrame} isRemovable={selectedFrame.isCustom} />
           ) : (
              <Card className="flex flex-col items-center justify-center p-12 text-center shadow-xl border-border/80 w-full" style={{minHeight: 400}}>
-                <CardTitle className="text-xl font-bold">No Device Selected</CardTitle>
-                <CardDescription className="mt-2">Please add or select a device to start previewing.</CardDescription>
+                <CardHeader>
+                    <CardTitle className="text-xl font-bold">No Device Selected</CardTitle>
+                    <CardDescription className="mt-2">Please add or select a device to start previewing.</CardDescription>
+                </CardHeader>
             </Card>
           )}
         </div>
