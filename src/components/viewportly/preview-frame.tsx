@@ -79,7 +79,7 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
             </Button>
           )}
         </CardHeader>
-        <CardContent className="relative p-0 bg-white" style={{height}}>
+        <CardContent className="relative p-0" style={{height}}>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
