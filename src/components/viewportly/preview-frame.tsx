@@ -118,10 +118,10 @@ export function PreviewFrame({ id, name, width, height, icon: Icon, isCustom, ur
           )}
           {errorInfo && !isLoading && (
              <div className="absolute inset-0 flex items-center justify-center bg-destructive/10 backdrop-blur-sm z-10 p-4">
-                <Alert variant="destructive" className="text-center">
+                <Alert variant="destructive" className="text-left max-h-full overflow-y-auto">
                     <AlertTriangle className="h-5 w-5" />
                     <AlertTitle className="font-bold">Content Blocked</AlertTitle>
-                    <AlertDescription className="text-xs">
+                    <AlertDescription className="text-xs whitespace-pre-wrap">
                         {errorInfo.explanation}
                     </AlertDescription>
                 </Alert>
