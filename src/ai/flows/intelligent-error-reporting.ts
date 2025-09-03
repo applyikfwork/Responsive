@@ -31,9 +31,9 @@ const prompt = ai.definePrompt({
   name: 'intelligentErrorReportingPrompt',
   input: {schema: IntelligentErrorReportingInputSchema},
   output: {schema: IntelligentErrorReportingOutputSchema},
-  prompt: `You are an expert web security analyst. A user tried to load a website in an iframe, but it failed.
+  prompt: `You are a helpful assistant for a website preview tool. A user is trying to preview a URL in an iframe, but it's not loading.
 
-Your goal is to explain why it failed in simple, non-technical terms. The most common reasons are the website's 'X-Frame-Options' or 'Content-Security-Policy' settings.
+Your task is to explain that the website cannot be displayed because of its own security settings. This is not a bug with the preview tool.
 
 Analyze the provided URL and error message.
 
@@ -41,13 +41,13 @@ URL: {{{url}}}
 Error Message: {{{errorMessage}}}
 
 **Instructions:**
-1.  Set \`isBlocked\` to \`true\` if you are confident the site is blocked by security policies.
+1.  Set \`isBlocked\` to \`true\`.
 2.  Write a concise, friendly, and easy-to-understand \`explanation\`.
-3.  Focus on the key takeaway: "This website has security settings that prevent it from being shown inside other websites."
-4.  Mentioning 'X-Frame-Options' or 'Content-Security-Policy' as the likely cause is good, but keep the explanation simple.
+3.  Directly state that the website at {{{url}}} has security settings (like 'X-Frame-Options' or 'Content-Security-Policy') that block it from being shown in tools like this one.
+4.  Make it clear this is a deliberate security choice by that website and not something our tool can bypass.
 
-**Example good explanation:**
-"The website at {{{url}}} has security settings (likely X-Frame-Options or Content-Security-Policy) that prevent it from being displayed inside other websites, including this preview tool."
+**Example Explanation:**
+"The website at {{{url}}} cannot be displayed because its security settings (specifically 'X-Frame-Options' or 'Content-Security-Policy') prevent it from being embedded in other websites. This is a security feature of that site, not a limitation of our tool."
 `,
 });
 
