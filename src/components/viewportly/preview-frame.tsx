@@ -17,7 +17,6 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
   const [error, setError] = React.useState<string | null>(null);
   const [effectiveWidth, setEffectiveWidth] = React.useState(width);
   const [isClient, setIsClient] = React.useState(false);
-  const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -26,6 +25,7 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
   React.useEffect(() => {
     if (!isClient) return;
     const updateWidth = () => {
+      // Ensure the frame is not wider than the viewport minus some padding
       setEffectiveWidth(Math.min(width, window.innerWidth - 40));
     };
 
@@ -79,7 +79,7 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
             </Button>
           )}
         </CardHeader>
-        <CardContent className="relative p-0" style={{height}}>
+        <CardContent className="relative p-0 bg-white" style={{height}}>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -101,13 +101,11 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
           )}
 
           <iframe
-            ref={iframeRef}
             title={`${name} Preview`}
             src={proxiedUrl}
             width="100%"
             height="100%"
-            className="border-0 bg-white transition-opacity duration-300"
-            style={{opacity: isLoading || error ? 0.3 : 1}}
+            className="border-0"
             sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
           />
         </CardContent>
