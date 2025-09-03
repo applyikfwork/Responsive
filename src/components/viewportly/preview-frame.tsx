@@ -18,6 +18,19 @@ export function PreviewFrame({ id, name, width, height, icon: Icon, isCustom, ur
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorInfo, setErrorInfo] = React.useState<{ explanation: string } | null>(null);
+  const [effectiveWidth, setEffectiveWidth] = React.useState(width);
+
+  React.useEffect(() => {
+    const updateWidth = () => {
+        setEffectiveWidth(Math.min(width, window.innerWidth - 40));
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+
+    return () => window.removeEventListener('resize', updateWidth);
+  }, [width]);
+  
 
   React.useEffect(() => {
     if (url) {
@@ -69,8 +82,6 @@ export function PreviewFrame({ id, name, width, height, icon: Icon, isCustom, ur
     
     return () => clearTimeout(checkTimeout);
   };
-  
-  const effectiveWidth = Math.min(width, typeof window !== 'undefined' ? window.innerWidth - 40 : width);
 
   return (
     <div className="flex flex-col gap-4 items-center animate-in fade-in-50 duration-500">
