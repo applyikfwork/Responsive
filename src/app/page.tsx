@@ -235,13 +235,13 @@ export default function ViewportlyPage() {
            </CardContent>
         </Card>
 
-        <div id="framesContainer" className="flex flex-wrap justify-center items-start gap-8">
+        <div id="framesContainer" className={`flex flex-wrap justify-center items-start gap-8 ${!isGridView ? 'py-10' : ''}`}>
           {isGridView ? (
             frames.map(frame => (
                <PreviewFrame key={frame.id} {...frame} url={submittedUrl} onRemove={removeFrame} isRemovable={frame.isCustom} />
             ))
           ) : selectedFrame ? (
-            <PreviewFrame key={selectedFrame.id} {...selectedFrame} url={submittedUrl} onRemove={removeFrame} isRemovable={selectedFrame.isCustom} />
+            <PreviewFrame key={selectedFrame.id} {...selectedFrame} url={submittedUrl} onRemove={removeFrame} isRemovable={selectedFrame.isCustom} isSingleView={true} />
           ) : (
              <Card className="flex flex-col items-center justify-center p-12 text-center shadow-xl border-border/80 w-full" style={{minHeight: 400}}>
                 <CardHeader>
