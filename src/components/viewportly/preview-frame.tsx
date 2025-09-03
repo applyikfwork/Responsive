@@ -17,6 +17,7 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
   const [error, setError] = React.useState<string | null>(null);
   const [effectiveWidth, setEffectiveWidth] = React.useState(width);
   const [isClient, setIsClient] = React.useState(false);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -38,20 +39,15 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
     if (url) {
       setIsLoading(true);
       setError(null);
+      // Since onLoad might not be reliable with proxied content,
+      // we'll just turn off the loader after a short delay.
+      const timer = setTimeout(() => setIsLoading(false), 2500);
+      return () => clearTimeout(timer);
     } else {
       setIsLoading(false);
       setError(null);
     }
   }, [url]);
-
-  const handleLoad = () => {
-    setIsLoading(false);
-  };
-
-  const handleError = () => {
-    setIsLoading(false);
-    setError(`Failed to load the website. The site might be offline or blocking requests.`);
-  };
 
   const proxiedUrl = url ? `/api/proxy?url=${encodeURIComponent(url)}` : 'about:blank';
 
@@ -105,12 +101,11 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isCustom, url
           )}
 
           <iframe
+            ref={iframeRef}
             title={`${name} Preview`}
             src={proxiedUrl}
             width="100%"
             height="100%"
-            onLoad={handleLoad}
-            onError={handleError}
             className="border-0 bg-white transition-opacity duration-300"
             style={{opacity: isLoading || error ? 0.3 : 1}}
             sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
