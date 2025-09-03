@@ -1,13 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
-import { AppWindow, Grid, Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X } from 'lucide-react';
+import { AppWindow, Grid, Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X, Sun, Moon } from 'lucide-react';
 
 export type Frame = {
   id: number;
@@ -48,7 +48,14 @@ export default function ViewportlyPage() {
   const [frames, setFrames] = useState<Frame[]>(initialFrames);
   const [selectedFrameId, setSelectedFrameId] = useState<number>(initialFrames[0].id);
   const [isGridView, setIsGridView] = useState<boolean>(false);
+  const [theme, setTheme] = useState('system');
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    root.classList.toggle('dark', isDark);
+  }, [theme]);
 
   const urlForm = useForm<z.infer<typeof urlSchema>>({
     resolver: zodResolver(urlSchema),
@@ -102,17 +109,30 @@ export default function ViewportlyPage() {
   };
   
   const selectedFrame = frames.find(f => f.id === selectedFrameId);
+  const isDark = typeof window !== 'undefined' && (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches));
 
   return (
     <main className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8 font-body">
       <div className="max-w-screen-2xl mx-auto">
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 relative">
           <h1 className="text-4xl sm:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
             ViewPortly
           </h1>
           <p className="mt-2 text-lg text-muted-foreground max-w-2xl mx-auto">
             Enter a URL to instantly preview it across a range of popular device sizes and custom resolutions.
           </p>
+           <div className="absolute top-0 right-0">
+             <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                aria-label="Toggle theme"
+              >
+                <Sun className="h-6 w-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-6 w-6 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+          </div>
         </header>
 
         <Card className="mb-8 shadow-lg border-border/80">
