@@ -20,75 +20,88 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isRemovable, 
   const [iframeKey, setIframeKey] = React.useState(Date.now());
   const [isRotated, setIsRotated] = React.useState(false);
 
-  const [size, setSize] = React.useState({ width: isRotated ? height : width, height: isRotated ? width : height });
+  const initialWidth = isRotated ? height : width;
+  const initialHeight = isRotated ? width : height;
+  
+  const [size, setSize] = React.useState({ width: initialWidth, height: initialHeight });
   const [isResizing, setIsResizing] = React.useState(false);
   const frameRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const initialWidth = isRotated ? height : width;
-  const initialHeight = isRotated ? width : height;
 
   React.useEffect(() => {
     setSize({ width: initialWidth, height: initialHeight });
   }, [id, initialWidth, initialHeight]);
 
-  const handleResize = React.useCallback((e: MouseEvent) => {
-    if (!frameRef.current) return;
-    const newWidth = Math.max(320, e.clientX - frameRef.current.getBoundingClientRect().left);
-    const newHeight = Math.max(200, e.clientY - frameRef.current.getBoundingClientRect().top);
-    setSize({ width: newWidth, height: newHeight });
-  }, []);
 
-  const stopResizing = React.useCallback(() => {
-    setIsResizing(false);
-    document.removeEventListener('mousemove', handleResize);
-    document.removeEventListener('mouseup', stopResizing);
-    document.body.style.userSelect = '';
-    document.body.style.cursor = '';
-  }, [handleResize]);
-
-  const startResizing = (e: React.MouseEvent) => {
+  const startResizing = (e: React.MouseEvent, direction: 'horizontal' | 'vertical' | 'both') => {
     e.preventDefault();
     setIsResizing(true);
-    document.addEventListener('mousemove', handleResize);
-    document.addEventListener('mouseup', stopResizing);
     document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'col-resize';
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = size.width;
+    const startHeight = size.height;
+
+    const doDrag = (e: MouseEvent) => {
+      let newWidth = startWidth;
+      let newHeight = startHeight;
+      if (direction === 'horizontal' || direction === 'both') {
+        newWidth = Math.max(320, startWidth + (e.clientX - startX));
+      }
+      if (direction === 'vertical' || direction === 'both') {
+        newHeight = Math.max(200, startHeight + (e.clientY - startY));
+      }
+       if (containerRef.current && isSingleView) {
+        const parentWidth = containerRef.current.parentElement?.clientWidth ?? window.innerWidth;
+        newWidth = Math.min(newWidth, parentWidth - 40);
+      }
+      setSize({ width: newWidth, height: newHeight });
+    };
+
+    const stopDrag = () => {
+      setIsResizing(false);
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', doDrag);
+      document.removeEventListener('mouseup', stopDrag);
+    };
+
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', stopDrag);
   };
-  
+
   const iframeLoadRef = React.useRef<HTMLIFrameElement>(null);
 
   React.useEffect(() => {
     if (url) {
       setIsLoading(true);
       setError(null);
-      setIframeKey(Date.now());
+      setIframeKey(Date.now()); // Force re-render of iframe
     }
   }, [url]);
 
-  const handleLoad = () => {
-    setIsLoading(false);
-    setError(null);
-  };
+  const handleLoad = () => setIsLoading(false);
   
   const handleError = () => {
+    // This is tricky because of cross-origin policies. 
+    // A common workaround is to check if we can access the contentDocument after a short delay.
+    // If we can't, it's likely blocked.
     setTimeout(() => {
-      try {
-        // Accessing contentDocument will throw a cross-origin error if blocked
-        const doc = iframeLoadRef.current?.contentDocument;
-        if (doc && doc.readyState === 'complete') {
-            handleLoad();
-        } else {
-            throw new Error("Blocked by security policy");
+        try {
+            // If the iframe's content is accessible, it means it loaded without a security error.
+            // If it's a blank page from the source, we can't detect that, but we can detect security blocks.
+            if (iframeLoadRef.current && iframeLoadRef.current.contentDocument) {
+               // It might have loaded a page that's just blank. We'll consider it loaded.
+               handleLoad();
+            }
+        } catch (e) {
+            setIsLoading(false);
+            setError(
+              `The website at ${new URL(url).hostname} has security settings (likely X-Frame-Options or Content-Security-Policy) that prevent it from being displayed inside other websites. This is a security feature of that website, not an error with this tool.`
+            );
         }
-      } catch (err) {
-        setIsLoading(false);
-        const siteHost = url ? new URL(url).hostname : 'the website';
-        setError(
-          `The website at ${siteHost} has security settings (likely X-Frame-Options or Content-Security-Policy) that prevent it from being displayed inside other websites. This is a security feature of that website, not an error with this tool.`
-        );
-      }
-    }, 500);
+    }, 500); // 500ms delay to give it time to load or fail
   };
 
   const handleRefresh = () => {
@@ -113,7 +126,7 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isRemovable, 
     <div ref={containerRef} className="flex flex-col gap-4 items-center animate-in fade-in-50 duration-500">
       <Card
         ref={frameRef}
-        className="flex flex-col overflow-hidden shadow-xl border-border/80 transition-[width,height] duration-100"
+        className="relative flex flex-col overflow-hidden shadow-xl border-border/80 transition-shadow duration-100"
         style={{ width: size.width, height: 'auto', minWidth: '320px' }}
       >
         <CardHeader className="flex flex-row items-center justify-between bg-muted/30 p-3 cursor-grab active:cursor-grabbing">
@@ -122,7 +135,7 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isRemovable, 
             <div>
               <CardTitle className="text-base font-bold">{isResizing ? "Live Adjust" : name}</CardTitle>
               <CardDescription className="text-xs tabular-nums">
-                {size.width}px &times; {size.height}px
+                {Math.round(size.width)}px &times; {Math.round(size.height)}px
               </CardDescription>
             </div>
           </div>
@@ -131,7 +144,10 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isRemovable, 
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground"
-                onClick={() => setIsRotated(prev => !prev)}
+                onClick={() => {
+                  setSize({ width: size.height, height: size.width });
+                  setIsRotated(prev => !prev);
+                }}
                 title="Rotate frame"
               >
                 <RefreshCw className={`h-4 w-4 transition-transform duration-300 ${isRotated ? 'rotate-90' : ''}`} />
@@ -159,7 +175,7 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isRemovable, 
                   <Alert variant="destructive" className="text-left max-h-full overflow-y-auto">
                     <AlertTriangle className="h-5 w-5" />
                     <AlertTitle className="font-bold">Content Blocked</AlertTitle>
-                    <AlertDescription className="text-sm whitespace-pre-wrap">{error}</AlertDescription>
+                    <AlertDescription className="text-sm">{error}</AlertDescription>
                   </Alert>
               )}
               {!url && !isLoading && !error && (
@@ -186,49 +202,26 @@ export function PreviewFrame({id, name, width, height, icon: Icon, isRemovable, 
           )}
           {isSingleView && (
             <>
+              {/* Corner Resize Handle */}
               <div 
                 className="absolute -bottom-1 -right-1 w-4 h-4 cursor-nwse-resize z-20"
-                onMouseDown={startResizing}
+                onMouseDown={(e) => startResizing(e, 'both')}
               >
                 <Move className="w-3 h-3 text-primary/50 rotate-45"/>
               </div>
+              {/* Vertical Resize Handle */}
               <div 
                 className="absolute bottom-0 left-0 w-full h-1 cursor-ns-resize z-10"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  setIsResizing(true);
-                  const handleVerticalResize = (me: MouseEvent) => setSize(s => ({...s, height: Math.max(200, me.clientY - frameRef.current!.getBoundingClientRect().top)}));
-                  const stopVerticalResize = () => {
-                    setIsResizing(false);
-                    document.removeEventListener('mousemove', handleVerticalResize);
-                    document.removeEventListener('mouseup', stopVerticalResize);
-                    document.body.style.cursor = '';
-                  };
-                  document.addEventListener('mousemove', handleVerticalResize);
-                  document.addEventListener('mouseup', stopVerticalResize);
-                  document.body.style.cursor = 'ns-resize';
-                }}
+                onMouseDown={(e) => startResizing(e, 'vertical')}
               />
+              {/* Horizontal Resize Handle */}
               <div 
                 className="absolute top-0 right-0 w-1 h-full cursor-ew-resize z-10"
-                 onMouseDown={(e) => {
-                  e.preventDefault();
-                  setIsResizing(true);
-                  const handleHorizontalResize = (me: MouseEvent) => setSize(s => ({...s, width: Math.max(320, me.clientX - frameRef.current!.getBoundingClientRect().left)}));
-                  const stopHorizontalResize = () => {
-                    setIsResizing(false);
-                    document.removeEventListener('mousemove', handleHorizontalResize);
-                    document.removeEventListener('mouseup', stopHorizontalResize);
-                     document.body.style.cursor = '';
-                  };
-                  document.addEventListener('mousemove', handleHorizontalResize);
-                  document.addEventListener('mouseup', stopHorizontalResize);
-                   document.body.style.cursor = 'ew-resize';
-                }}
+                 onMouseDown={(e) => startResizing(e, 'horizontal')}
               />
             </>
           )}
-          {isResizing && <div className="absolute inset-0 z-0"/>}
+          {isResizing && <div className="absolute inset-0 z-20" style={{userSelect: 'none'}}/>}
         </CardContent>
       </Card>
     </div>
