@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
-import { AppWindow, Grid, Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X, Sun, Moon, RefreshCw } from 'lucide-react';
+import { AppWindow, Grid, Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X, Sun, Moon, RefreshCw, Download } from 'lucide-react';
 
 export type Frame = {
   id: number;
@@ -128,7 +128,13 @@ export default function ViewportlyPage() {
           <p className="mt-2 text-lg text-muted-foreground max-w-2xl mx-auto">
             Enter a URL to instantly preview it across a range of popular device sizes and custom resolutions.
           </p>
-           <div className="absolute top-0 right-0">
+           <div className="absolute top-0 right-0 flex items-center gap-2">
+             <a href="https://prajstore.netlify.app/app/nLs10PBHvTFtMUH6Vjam" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download App
+                </Button>
+              </a>
              <Button
                 variant="ghost"
                 size="icon"
