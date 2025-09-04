@@ -8,7 +8,7 @@ const logoUrl = 'https://res.cloudinary.com/dodzjp0gr/image/upload/v1756963502/f
 export const metadata: Metadata = {
   title: 'ViewPortly - Ultimate Responsive Design Preview Tool',
   description: 'Test and preview any website on a wide range of devices. ViewPortly is the ultimate free tool for developers and designers to ensure their web applications are fully responsive.',
-  keywords: ['responsive design checker', 'viewport tester', 'website preview tool', 'mobile friendly test', 'cross device testing', 'developer tools', 'web design', 'UI testing', 'screen resolution simulator'],
+  keywords: ['responsive design checker', 'viewport tester', 'website preview tool', 'mobile friendly test', 'cross device testing', 'developer tools', 'web design', 'UI testing', 'screen resolution simulator', 'live responsive preview', 'responsive web design tool'],
   metadataBase: new URL(appUrl),
   alternates: {
     canonical: '/',
@@ -36,9 +36,9 @@ export const metadata: Metadata = {
     images: [logoUrl],
   },
   icons: {
-    icon: '/favicon.ico?v=1',
-    shortcut: '/favicon.ico?v=1',
-    apple: '/apple-touch-icon.png?v=1',
+    icon: logoUrl,
+    shortcut: logoUrl,
+    apple: logoUrl,
   },
 };
 
@@ -53,8 +53,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
-        <link rel="icon" href={logoUrl} sizes="any" />
-        <link rel="apple-touch-icon" href={logoUrl} />
       </head>
       <body className="font-body antialiased">
         {children}
