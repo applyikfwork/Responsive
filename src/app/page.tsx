@@ -5,9 +5,10 @@ import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -115,9 +116,15 @@ export default function ViewportlyPage() {
     <main className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8 font-body">
       <div className="max-w-screen-2xl mx-auto">
         <header className="text-center mb-8 relative">
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-            ViewPortly
-          </h1>
+          <div className="flex justify-center items-center mb-4">
+              <Image 
+                src="https://res.cloudinary.com/dodzjp0gr/image/upload/v1756963502/file_00000000c84c61faa74dc7edaca5951c_fvtohm.png"
+                alt="ViewPortly Logo"
+                width={200}
+                height={50}
+                priority
+              />
+          </div>
           <p className="mt-2 text-lg text-muted-foreground max-w-2xl mx-auto">
             Enter a URL to instantly preview it across a range of popular device sizes and custom resolutions.
           </p>
@@ -263,7 +270,7 @@ export default function ViewportlyPage() {
           ) : selectedFrame ? (
             <PreviewFrame key={selectedFrame.id} {...selectedFrame} url={submittedUrl} onRemove={removeFrame} isRemovable={selectedFrame.isCustom} isSingleView={true} />
           ) : (
-             <Card className="flex flex-col items-center justify-center p-12 text-center shadow-xl border-border/80 w-full" style={{minHeight: 400}}>
+             <Card className="flex flex-col items-center justify-center p-12 text-center shadow-xl border-border/80 w-full min-h-[400px]">
                 <CardHeader>
                     <CardTitle className="text-xl font-bold">No Device Selected</CardTitle>
                     <CardDescription className="mt-2">Please add or select a device to start previewing.</CardDescription>

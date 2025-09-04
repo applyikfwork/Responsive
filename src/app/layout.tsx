@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://viewportly.app';
+const logoUrl = 'https://res.cloudinary.com/dodzjp0gr/image/upload/v1756963502/file_00000000c84c61faa74dc7edaca5951c_fvtohm.png';
 
 export const metadata: Metadata = {
   title: 'ViewPortly - Responsive Preview Tool',
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     siteName: 'ViewPortly',
     images: [
       {
-        url: '/og-image.png', // It's recommended to create and add this image to your /public folder
+        url: logoUrl,
         width: 1200,
         height: 630,
         alt: 'ViewPortly Responsive Preview Tool',
@@ -32,10 +33,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ViewPortly - Responsive Preview Tool',
     description: 'Instantly preview any website across a range of popular device sizes and custom resolutions.',
-    images: ['/og-image.png'], // It's recommended to create and add this image to your /public folder
+    images: [logoUrl],
   },
   icons: {
-    icon: '/favicon.ico', // It's recommended to create and add this file to your /public folder
+    icon: logoUrl,
   }
 };
 
