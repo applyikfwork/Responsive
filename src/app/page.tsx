@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
-import { AppWindow, Grid, Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X, Sun, Moon } from 'lucide-react';
+import { AppWindow, Grid, Globe, Plus, Smartphone, Tablet, Laptop, MoveHorizontal, MoveVertical, DraftingCompass, X, Sun, Moon, RefreshCw } from 'lucide-react';
 
 export type Frame = {
   id: number;
@@ -262,7 +262,7 @@ export default function ViewportlyPage() {
            </CardContent>
         </Card>
 
-        <div id="framesContainer" className={`flex flex-wrap justify-center items-start gap-8 ${!isGridView ? 'py-10' : ''}`}>
+        <div id="framesContainer" className={`transition-all duration-300 flex flex-wrap justify-center items-start gap-8 ${!isGridView ? 'py-10' : ''}`}>
           {isGridView ? (
             frames.map(frame => (
                <PreviewFrame key={frame.id} {...frame} url={submittedUrl} onRemove={removeFrame} isRemovable={frame.isCustom} />
